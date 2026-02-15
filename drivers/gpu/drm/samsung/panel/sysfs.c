@@ -4051,7 +4051,7 @@ static ssize_t mask_brightness_store(struct device *dev,
 	struct panel_info *panel_data;
 	struct panel_device *panel = dev_get_drvdata(dev);
 	struct panel_bl_device *panel_bl;
-	int value, rc;
+	int value;
 
 	sscanf(buf, "%d", &value);
 
