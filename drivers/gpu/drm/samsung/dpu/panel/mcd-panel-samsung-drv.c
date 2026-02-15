@@ -351,36 +351,38 @@ static int mcd_drm_panel_set_fingermask_layer(struct exynos_drm_connector *exyno
 
 	int ret = 0;
 
-	if (ctx->fingerprint_mask == exynos_state->fingerprint_mask)
-		return 0;
+    if (exynos_state->fingerprint_mask == 0 && ctx->fingerprint_mask == 1) {
+        if (!after)
+            data.req = MASK_LAYER_OFF_BEFORE;
+        else
+            data.req = MASK_LAYER_OFF_AFTER;
+            
+        ctx->fingerprint_mask = exynos_state->fingerprint_mask;
 
-	if (exynos_state->fingerprint_mask) {
-		if (!after)
-			data.req = MASK_LAYER_ON_BEFORE;
-		else
-			data.req = MASK_LAYER_ON_AFTER;
-	} else {
-		if (!after)
-			data.req = MASK_LAYER_OFF_BEFORE;
-		else
-			data.req = MASK_LAYER_OFF_AFTER;
-	}
+    } else if (exynos_state->fingerprint_mask == 1 && ctx->fingerprint_mask == 0) {
+        if (!after)
+            data.req = MASK_LAYER_ON_BEFORE;
+        else
+            data.req = MASK_LAYER_ON_AFTER;
 
-	ret = call_mcd_panel_func(ctx->mcd_panel_dev, set_mask_layer, &data);
+        ctx->fingerprint_mask = exynos_state->fingerprint_mask;
+        
+    } else {
+        return 0;
+    }
 
-	if (after)
-		ctx->fingerprint_mask = exynos_state->fingerprint_mask;
+    ret = call_mcd_panel_func(ctx->mcd_panel_dev, set_mask_layer, &data);
 
-	if (ret < 0) {
-		dev_err(ctx->dev, "%s: mcd_panel set_mask_layer failed %d", __func__, ret);
-		return -EINVAL;
-	}
+    if (ret < 0) {
+        dev_err(ctx->dev, "%s: mcd_panel set_mask_layer failed %d", __func__, ret);
+        return -EINVAL;
+    }
 
-	dev_info(ctx->dev, "%s (%s)(%s)\n", __func__,
-			after ? "after" : "before",
-			exynos_state->fingerprint_mask ? "enable" : "disable");
+    dev_info(ctx->dev, "%s (%s)(%s)\n", __func__,
+             after ? "after" : "before",
+             exynos_state->fingerprint_mask ? "enable" : "disable");
 
-	return ret;
+    return ret;
 }
 #endif
 
