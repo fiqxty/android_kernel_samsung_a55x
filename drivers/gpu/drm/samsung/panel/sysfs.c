@@ -4053,9 +4053,7 @@ static ssize_t mask_brightness_store(struct device *dev,
 	struct panel_bl_device *panel_bl;
 	int value, rc;
 
-	rc = kstrtouint(buf, 0, &value);
-	if (rc < 0)
-		return rc;
+	sscanf(buf, "%d", &value);
 
 	if (panel == NULL) {
 		panel_err("panel is null\n");
@@ -4075,7 +4073,19 @@ static ssize_t mask_brightness_store(struct device *dev,
 
 	panel_bl->props.mask_layer_br_target = value;
 
-	return size;
+	/* ------------------------FIX(?)-------------------------------- */
+        if (value > 0) {
+        int mode = 1;
+        /* set brightness > 0 -> Force Mask ON */
+        call_panel_drv_func(panel, set_mask_layer, &mode);
+    } else {
+        int mode = 0;
+        /* set brightness 0 -> Force Mask OFF */
+        call_panel_drv_func(panel, set_mask_layer, &mode);
+    }
+    /* --------------------------------------------------------- */
+
+    return size;
 }
 
 static ssize_t actual_mask_brightness_show(struct device *dev,
